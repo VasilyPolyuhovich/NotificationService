@@ -10,3 +10,8 @@ DerivedData/
 *.playground
 .vscode/
 .idea/
+
+# Working files (stored in parent .project/ folder)
+CLAUDE.md
+ARCHITECTURE_ANALYSIS.md
+.project/

@@ -1,9 +1,9 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Custom notification category with actions
 @available(iOS 18.0, macOS 15.0, *)
-public struct NotificationCategory: Sendable, Hashable {
+public struct NotificationCategory: Sendable, Equatable {
 
     public let identifier: String
     public let actions: [NotificationAction]
@@ -36,6 +36,7 @@ public struct NotificationCategory: Sendable, Hashable {
 
 // MARK: - Predefined Categories
 
+@available(iOS 18.0, macOS 15.0, *)
 extension NotificationCategory {
 
     /// Reminder category with Complete and Snooze actions

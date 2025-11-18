@@ -1,5 +1,5 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Type-safe notification request
 @available(iOS 18.0, macOS 15.0, *)
@@ -40,6 +40,7 @@ public struct NotificationRequest: Sendable {
 
 // MARK: - Convenience Initializers
 
+@available(iOS 18.0, macOS 15.0, *)
 extension NotificationRequest {
 
     /// Create immediate notification (no trigger)

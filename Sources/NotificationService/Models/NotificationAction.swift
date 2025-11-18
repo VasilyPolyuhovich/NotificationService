@@ -1,9 +1,13 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Type-safe wrapper for notification actions
 @available(iOS 18.0, macOS 15.0, *)
-public struct NotificationAction: Sendable, Hashable {
+public struct NotificationAction: Sendable, Equatable {
+    
+    public static func == (lhs: NotificationAction, rhs: NotificationAction) -> Bool {
+        lhs.identifier == rhs.identifier && lhs.title == rhs.title
+    }
 
     public let identifier: String
     public let title: String
@@ -44,6 +48,7 @@ public struct NotificationAction: Sendable, Hashable {
 
 // MARK: - Predefined Actions
 
+@available(iOS 18.0, macOS 15.0, *)
 extension NotificationAction {
 
     /// Complete action (foreground)

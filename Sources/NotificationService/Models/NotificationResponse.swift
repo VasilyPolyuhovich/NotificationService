@@ -1,5 +1,5 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Notification action response information
 @available(iOS 18.0, macOS 15.0, *)
@@ -12,7 +12,7 @@ public struct NotificationResponse: Sendable {
     public let notificationIdentifier: String
 
     /// User info from notification (use value(forKey:) to access safely)
-    public let userInfo: [String: Any]
+    public let userInfo: [String: any Sendable]
 
     /// Notification title
     public let title: String
@@ -31,7 +31,7 @@ public struct NotificationResponse: Sendable {
     }
 
     /// Get value from userInfo dictionary
-    public func value<T>(forKey key: String) -> T? {
+    public func value<T: Sendable>(forKey key: String) -> T? {
         userInfo[key] as? T
     }
 
@@ -39,11 +39,13 @@ public struct NotificationResponse: Sendable {
         self.actionIdentifier = response.actionIdentifier
         self.notificationIdentifier = response.notification.request.identifier
 
-        // Convert userInfo to [String: Any] for Sendable compliance
-        var stringUserInfo: [String: Any] = [:]
+        // Convert userInfo to [String: any Sendable]
+        // Note: We unsafely assume values are Sendable-compatible types
+        var stringUserInfo: [String: any Sendable] = [:]
         for (key, value) in response.notification.request.content.userInfo {
             if let stringKey = key as? String {
-                stringUserInfo[stringKey] = value
+                // Unsafely bridge Any to Sendable - typical notification userInfo contains only primitive types
+                stringUserInfo[stringKey] = unsafeBitCast(value, to: (any Sendable).self)
             }
         }
         self.userInfo = stringUserInfo

@@ -1,15 +1,15 @@
 # NotificationService
 
-Type-safe Swift Package для управління локальними та remote push нотифікаціями в iOS додатках.
+Type-safe Swift Package for managing local and remote push notifications in iOS applications.
 
 ## Features
 
-- ✅ Type-safe API для UNUserNotificationCenter
-- ✅ Builder pattern для контенту нотифікацій
-- ✅ Підтримка різних типів triggers (time, calendar, location)
+- ✅ Type-safe API for UNUserNotificationCenter
+- ✅ Builder pattern for notification content
+- ✅ Support for different trigger types (time, calendar, location)
 - ✅ Async/await first
-- ✅ SwiftUI integration з @Observable
-- ✅ Категорії нотифікацій з custom actions
+- ✅ SwiftUI integration with @Observable
+- ✅ Notification categories with custom actions
 - ✅ iOS 18.0+, Swift 6.0+
 - ✅ Strict Concurrency enabled
 
@@ -23,15 +23,15 @@ dependencies: [
 ]
 ```
 
-### Local Package (для розробки)
+### Local Package (for development)
 
-Додайте як local package dependency в Xcode:
+Add as local package dependency in Xcode:
 1. File → Add Package Dependencies...
-2. Add Local... → Оберіть папку NotificationService
+2. Add Local... → Select NotificationService folder
 
 ## Quick Start
 
-### 1. Setup в App
+### 1. Setup in App
 
 ```swift
 import SwiftUI
@@ -70,7 +70,7 @@ Button("Enable Notifications") {
 ### 3. Schedule Notification
 
 ```swift
-// Проста нотифікація
+// Simple notification
 let content = NotificationContent()
     .title("Reminder")
     .body("Don't forget to check your tasks!")
@@ -88,7 +88,7 @@ try await notificationManager.schedule(request)
 ### 4. Repeating Notifications
 
 ```swift
-// Щоденна нотифікація о 9:00
+// Daily notification at 9:00 AM
 let content = NotificationContent()
     .title("Good Morning!")
     .body("Time to start your day")
@@ -105,17 +105,17 @@ try await NotificationScheduler.scheduleDaily(
 ### Time-based Notifications
 
 ```swift
-// Через 60 секунд
+// After 60 seconds
 let trigger = NotificationTrigger.after(seconds: 60)
 
-// В конкретний час
+// At specific date
 let date = Date().addingTimeInterval(3600)
 let trigger = NotificationTrigger.at(date: date)
 
-// Щодня о 9:30
+// Daily at 9:30 AM
 let trigger = NotificationTrigger.daily(hour: 9, minute: 30)
 
-// Щотижня у понеділок о 10:00
+// Weekly on Monday at 10:00 AM
 let trigger = NotificationTrigger.weekly(weekday: 2, hour: 10, minute: 0)
 ```
 
@@ -237,4 +237,4 @@ MIT
 
 ## Contributing
 
-Pull requests welcome! Дотримуйтесь існуючого code style та додавайте тести для нового функціоналу.
+Pull requests welcome! Follow the existing code style and add tests for new functionality.

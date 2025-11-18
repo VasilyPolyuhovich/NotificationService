@@ -1,29 +1,29 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Handles notification presentation and user interactions
 @available(iOS 18.0, macOS 15.0, *)
 @MainActor
-final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Sendable {
+final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
 
     // MARK: - Properties
 
     /// Callback for notification tap (default action)
-    var onNotificationTap: (@Sendable (NotificationResponse) async -> Void)?
+    nonisolated(unsafe) var onNotificationTap: (@Sendable (NotificationResponse) async -> Void)?
 
     /// Callback for notification dismiss
-    var onNotificationDismiss: (@Sendable (NotificationResponse) async -> Void)?
+    nonisolated(unsafe) var onNotificationDismiss: (@Sendable (NotificationResponse) async -> Void)?
 
     /// Callback for custom action
-    var onCustomAction: (@Sendable (NotificationResponse) async -> Void)?
+    nonisolated(unsafe) var onCustomAction: (@Sendable (NotificationResponse) async -> Void)?
 
     /// Callback for foreground presentation (return presentation options)
-    var onForegroundPresentation: (@Sendable (UNNotification) async -> UNNotificationPresentationOptions)?
+    nonisolated(unsafe) var onForegroundPresentation: (@Sendable (UNNotification) async -> UNNotificationPresentationOptions)?
 
     // MARK: - Presentation
 
     /// Called when a notification is delivered while app is in foreground
-    func userNotificationCenter(
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
@@ -39,7 +39,7 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Se
     // MARK: - Response Handling
 
     /// Called when user interacts with a notification
-    func userNotificationCenter(
+    nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {

@@ -1,5 +1,5 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 import Observation
 
 /// Manages user notifications, permissions, and scheduling
@@ -26,7 +26,7 @@ public final class NotificationManager: NSObject, Sendable {
     }
 
     /// Registered categories
-    private var registeredCategories: Set<NotificationCategory> = []
+    private var registeredCategories: [NotificationCategory] = []
 
     // MARK: - Initialization
 
@@ -43,7 +43,12 @@ public final class NotificationManager: NSObject, Sendable {
     /// Register notification categories
     /// - Parameter categories: Categories to register
     public func registerCategories(_ categories: [NotificationCategory]) {
-        registeredCategories.formUnion(categories)
+        // Merge categories, avoiding duplicates by identifier
+        for category in categories {
+            if !registeredCategories.contains(where: { $0.identifier == category.identifier }) {
+                registeredCategories.append(category)
+            }
+        }
         let unCategories = Set(registeredCategories.map { $0.toUNCategory() })
         notificationCenter.setNotificationCategories(unCategories)
     }
@@ -109,11 +114,16 @@ public final class NotificationManager: NSObject, Sendable {
         try await notificationCenter.add(unRequest)
     }
 
-    /// Schedule multiple notifications
+    /// Schedule multiple notifications in parallel
     /// - Parameter requests: Array of notification requests
     public func scheduleMultiple(_ requests: [NotificationRequest]) async throws {
-        for request in requests {
-            try await schedule(request)
+        try await withThrowingTaskGroup(of: Void.self) { group in
+            for request in requests {
+                group.addTask {
+                    try await self.schedule(request)
+                }
+            }
+            try await group.waitForAll()
         }
     }
 

@@ -1,5 +1,5 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 import CoreLocation
 
 /// Type-safe notification trigger types
@@ -12,8 +12,10 @@ public enum NotificationTrigger: Sendable {
     /// Calendar trigger (specific date/time)
     case calendar(DateComponents, repeats: Bool = false)
 
-    /// Location trigger
+    #if !os(macOS)
+    /// Location trigger (iOS only)
     case location(CLLocationCoordinate2D, radius: CLLocationDistance, notifyOnEntry: Bool, notifyOnExit: Bool, repeats: Bool = false)
+    #endif
 
     // MARK: - Conversion
 
@@ -32,6 +34,7 @@ public enum NotificationTrigger: Sendable {
                 repeats: repeats
             )
 
+        #if !os(macOS)
         case .location(let coordinate, let radius, let onEntry, let onExit, let repeats):
             let region = CLCircularRegion(
                 center: coordinate,
@@ -45,12 +48,14 @@ public enum NotificationTrigger: Sendable {
                 region: region,
                 repeats: repeats
             )
+        #endif
         }
     }
 }
 
 // MARK: - Convenience Initializers
 
+@available(iOS 18.0, macOS 15.0, *)
 extension NotificationTrigger {
 
     /// Schedule notification after delay

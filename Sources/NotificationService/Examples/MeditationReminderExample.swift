@@ -1,5 +1,5 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Example: Meditation reminder with alarm-like features
 /// Ensures user doesn't miss morning meditation
@@ -10,13 +10,14 @@ public enum MeditationReminderExample {
 
     /// Creates meditation reminder with maximum visibility
     ///
-    /// Механізми щоб користувач точно не пропустив:
+    /// Mechanisms to ensure user doesn't miss the notification:
     /// 1. **Critical Alert** - bypasses Do Not Disturb and silent mode
     /// 2. **Time Sensitive** - shows as high priority notification
     /// 3. **Repeating Daily** - automatic scheduling every day
     /// 4. **Custom Sound** - unique sound for meditation
     /// 5. **Snooze Action** - allow postponing for 5/10 minutes
     /// 6. **Multiple Reminders** - notification chain (5 min before, at time, 5 min after)
+    @MainActor
     public static func setupMeditationAlarm(hour: Int, minute: Int) async throws {
         let manager = NotificationManager.shared
 
@@ -65,6 +66,7 @@ public enum MeditationReminderExample {
     // MARK: - Notification Chain
 
     /// Schedules multiple notifications to ensure visibility
+    @MainActor
     private static func scheduleNotificationChain(
         hour: Int,
         minute: Int,
@@ -77,7 +79,7 @@ public enum MeditationReminderExample {
             .title("🧘‍♂️ Time for Morning Meditation")
             .body("Your daily mindfulness practice awaits")
             .category(category)
-            .sound(.defaultCritical(withAudioVolume: 1.0))
+            .sound(.defaultCriticalSound(withAudioVolume: 1.0))
             .interruptionLevel(.timeSensitive)
             .badge(1)
             .userInfo(key: "type", value: "main")
@@ -111,7 +113,7 @@ public enum MeditationReminderExample {
             .title("Don't forget your meditation!")
             .body("Just 10 minutes for your wellbeing")
             .category(category)
-            .sound(.defaultCritical(withAudioVolume: 0.8))
+            .sound(.defaultCriticalSound(withAudioVolume: 0.8))
             .interruptionLevel(.timeSensitive)
             .userInfo(key: "type", value: "follow-up")
 
@@ -126,6 +128,7 @@ public enum MeditationReminderExample {
 
     // MARK: - Action Handlers
 
+    @MainActor
     private static func setupActionHandlers(
         manager: NotificationManager,
         hour: Int,
@@ -149,7 +152,7 @@ public enum MeditationReminderExample {
 
             case "SKIP_TODAY":
                 print("❌ Skipped for today")
-                manager.removeAllPending()
+                await MainActor.run { manager.removeAllPending() }
 
             default:
                 break
@@ -166,11 +169,12 @@ public enum MeditationReminderExample {
 
     // MARK: - Snooze
 
+    @MainActor
     private static func scheduleSnoozedNotification(delay: TimeInterval) async throws {
         let content = NotificationContent()
             .title("🧘‍♂️ Meditation Time")
             .body("Ready for your practice?")
-            .sound(.defaultCritical(withAudioVolume: 1.0))
+            .sound(.defaultCriticalSound(withAudioVolume: 1.0))
             .interruptionLevel(.timeSensitive)
 
         let request = NotificationRequest.delayed(

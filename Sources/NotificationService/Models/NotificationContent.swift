@@ -1,5 +1,5 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Type-safe builder for notification content
 @available(iOS 18.0, macOS 15.0, *)
@@ -13,7 +13,7 @@ public struct NotificationContent: Sendable {
     private var _badge: NSNumber?
     private var _sound: UNNotificationSound?
     private var _categoryIdentifier: String?
-    private var _userInfo: [AnyHashable: Any] = [:]
+    private var _userInfo: [String: any Sendable] = [:]
     private var _attachments: [UNNotificationAttachment] = []
     private var _threadIdentifier: String?
     private var _interruptionLevel: UNNotificationInterruptionLevel = .active
@@ -74,14 +74,14 @@ public struct NotificationContent: Sendable {
     }
 
     /// Add user info dictionary
-    public func userInfo(_ userInfo: [AnyHashable: Any]) -> Self {
+    public func userInfo(_ userInfo: [String: any Sendable]) -> Self {
         var copy = self
         copy._userInfo = userInfo
         return copy
     }
 
     /// Add single user info value
-    public func userInfo(key: AnyHashable, value: Any) -> Self {
+    public func userInfo(key: String, value: any Sendable) -> Self {
         var copy = self
         copy._userInfo[key] = value
         return copy

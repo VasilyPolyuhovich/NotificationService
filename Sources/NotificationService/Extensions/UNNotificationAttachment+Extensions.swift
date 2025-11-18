@@ -1,6 +1,7 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
+@available(iOS 18.0, macOS 15.0, *)
 extension UNNotificationAttachment {
 
     /// Create attachment from file URL

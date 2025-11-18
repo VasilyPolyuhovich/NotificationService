@@ -1,7 +1,8 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Example: How to create and handle custom notification categories
+@available(iOS 18.0, macOS 15.0, *)
 public enum CustomNotificationExample {
 
     // MARK: - Custom Category Creation
@@ -69,6 +70,7 @@ public enum CustomNotificationExample {
     // MARK: - Usage Example
 
     /// Setup notifications in your app
+    @MainActor
     static func setupExample() async {
         let manager = NotificationManager.shared
 
@@ -116,6 +118,7 @@ public enum CustomNotificationExample {
     }
 
     /// Schedule music player notification
+    @MainActor
     static func scheduleMusicNotification() async throws {
         let content = NotificationContent()
             .title("Now Playing")
@@ -129,6 +132,7 @@ public enum CustomNotificationExample {
     }
 
     /// Schedule task reminder
+    @MainActor
     static func scheduleTaskReminder(title: String, delay: TimeInterval) async throws {
         let content = NotificationContent()
             .title("Task Reminder")

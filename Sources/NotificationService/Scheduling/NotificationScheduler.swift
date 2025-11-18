@@ -1,5 +1,5 @@
 import Foundation
-import UserNotifications
+@preconcurrency import UserNotifications
 
 /// Helper for batch scheduling and managing notifications
 @available(iOS 18.0, macOS 15.0, *)
