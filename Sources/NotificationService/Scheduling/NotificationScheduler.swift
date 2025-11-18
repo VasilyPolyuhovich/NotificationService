@@ -2,17 +2,20 @@ import Foundation
 import UserNotifications
 
 /// Helper for batch scheduling and managing notifications
+@available(iOS 18.0, macOS 15.0, *)
 public struct NotificationScheduler: Sendable {
 
     // MARK: - Batch Operations
 
     /// Schedule multiple notifications at once
+    @MainActor
     public static func scheduleAll(_ requests: [NotificationRequest]) async throws {
         let manager = NotificationManager.shared
         try await manager.scheduleMultiple(requests)
     }
 
     /// Replace all pending notifications with new ones
+    @MainActor
     public static func replaceAll(with requests: [NotificationRequest]) async throws {
         let manager = NotificationManager.shared
         manager.removeAllPending()
@@ -22,6 +25,7 @@ public struct NotificationScheduler: Sendable {
     // MARK: - Recurring Notifications
 
     /// Schedule daily notification
+    @MainActor
     public static func scheduleDaily(
         identifier: NotificationIdentifier = NotificationIdentifier(),
         content: NotificationContent,
@@ -38,6 +42,7 @@ public struct NotificationScheduler: Sendable {
     }
 
     /// Schedule weekly notification
+    @MainActor
     public static func scheduleWeekly(
         identifier: NotificationIdentifier = NotificationIdentifier(),
         content: NotificationContent,
@@ -57,6 +62,7 @@ public struct NotificationScheduler: Sendable {
     // MARK: - Utility
 
     /// Get count of pending notifications
+    @MainActor
     public static func getPendingCount() async -> Int {
         let manager = NotificationManager.shared
         let requests = await manager.getPendingRequests()
@@ -64,6 +70,7 @@ public struct NotificationScheduler: Sendable {
     }
 
     /// Get count of delivered notifications
+    @MainActor
     public static func getDeliveredCount() async -> Int {
         let manager = NotificationManager.shared
         let notifications = await manager.getDeliveredNotifications()
@@ -71,6 +78,7 @@ public struct NotificationScheduler: Sendable {
     }
 
     /// Check if notification with identifier exists
+    @MainActor
     public static func exists(identifier: NotificationIdentifier) async -> Bool {
         let manager = NotificationManager.shared
         let requests = await manager.getPendingRequests()

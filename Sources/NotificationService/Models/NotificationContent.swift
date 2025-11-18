@@ -2,6 +2,7 @@ import Foundation
 import UserNotifications
 
 /// Type-safe builder for notification content
+@available(iOS 18.0, macOS 15.0, *)
 public struct NotificationContent: Sendable {
 
     // MARK: - Properties
@@ -62,6 +63,13 @@ public struct NotificationContent: Sendable {
     public func category(_ identifier: String) -> Self {
         var copy = self
         copy._categoryIdentifier = identifier
+        return copy
+    }
+
+    /// Set category using NotificationCategory
+    public func category(_ category: NotificationCategory) -> Self {
+        var copy = self
+        copy._categoryIdentifier = category.identifier
         return copy
     }
 

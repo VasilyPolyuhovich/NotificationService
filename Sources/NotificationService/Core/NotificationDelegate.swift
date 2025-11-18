@@ -2,8 +2,23 @@ import Foundation
 import UserNotifications
 
 /// Handles notification presentation and user interactions
+@available(iOS 18.0, macOS 15.0, *)
 @MainActor
 final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Sendable {
+
+    // MARK: - Properties
+
+    /// Callback for notification tap (default action)
+    var onNotificationTap: (@Sendable (NotificationResponse) async -> Void)?
+
+    /// Callback for notification dismiss
+    var onNotificationDismiss: (@Sendable (NotificationResponse) async -> Void)?
+
+    /// Callback for custom action
+    var onCustomAction: (@Sendable (NotificationResponse) async -> Void)?
+
+    /// Callback for foreground presentation (return presentation options)
+    var onForegroundPresentation: (@Sendable (UNNotification) async -> UNNotificationPresentationOptions)?
 
     // MARK: - Presentation
 
@@ -12,7 +27,12 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Se
         _ center: UNUserNotificationCenter,
         willPresent notification: UNNotification
     ) async -> UNNotificationPresentationOptions {
-        // Show notification even when app is in foreground
+        // Use custom handler if provided
+        if let handler = onForegroundPresentation {
+            return await handler(notification)
+        }
+
+        // Default: show notification even when app is in foreground
         return [.banner, .sound, .badge]
     }
 
@@ -23,37 +43,21 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate, Se
         _ center: UNUserNotificationCenter,
         didReceive response: UNNotificationResponse
     ) async {
-        let userInfo = response.notification.request.content.userInfo
-        let actionIdentifier = response.actionIdentifier
+        let notificationResponse = NotificationResponse(response: response)
 
         // Handle different actions
-        switch actionIdentifier {
+        switch response.actionIdentifier {
         case UNNotificationDefaultActionIdentifier:
             // User tapped the notification
-            await handleDefaultAction(userInfo: userInfo)
+            await onNotificationTap?(notificationResponse)
 
         case UNNotificationDismissActionIdentifier:
             // User dismissed the notification
-            await handleDismissAction(userInfo: userInfo)
+            await onNotificationDismiss?(notificationResponse)
 
         default:
             // Custom action
-            await handleCustomAction(actionIdentifier, userInfo: userInfo)
+            await onCustomAction?(notificationResponse)
         }
-    }
-
-    // MARK: - Action Handlers
-
-    private func handleDefaultAction(userInfo: [AnyHashable: Any]) async {
-        // TODO: Implement deep linking or navigation logic
-        print("Notification tapped: \(userInfo)")
-    }
-
-    private func handleDismissAction(userInfo: [AnyHashable: Any]) async {
-        print("Notification dismissed: \(userInfo)")
-    }
-
-    private func handleCustomAction(_ identifier: String, userInfo: [AnyHashable: Any]) async {
-        print("Custom action '\(identifier)' triggered: \(userInfo)")
     }
 }

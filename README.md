@@ -133,17 +133,66 @@ let content = NotificationContent()
     .interruptionLevel(.timeSensitive)
 ```
 
-### Categories & Actions
+### Custom Categories & Actions
 
 ```swift
-// Register categories
-NotificationCategory.registerAll()
+// 1. Create custom category with actions
+let musicPlayer = NotificationCategory(
+    identifier: "MUSIC_PLAYER",
+    actions: [
+        NotificationAction(
+            identifier: "PLAY_PAUSE",
+            title: "Play/Pause",
+            options: [],
+            icon: UNNotificationActionIcon(systemImageName: "playpause.fill")
+        ),
+        NotificationAction(
+            identifier: "NEXT_TRACK",
+            title: "Next",
+            options: []
+        )
+    ]
+)
 
-// Use category
+// 2. Register categories
+let manager = NotificationManager.shared
+manager.registerCategories([musicPlayer, .reminder, .alert])
+
+// 3. Setup action handlers
+manager.onCustomAction { response in
+    switch response.actionIdentifier {
+    case "PLAY_PAUSE":
+        // Handle play/pause
+        print("Toggle playback")
+    case "NEXT_TRACK":
+        // Skip to next track
+        print("Skip forward")
+    default:
+        break
+    }
+}
+
+// 4. Handle notification tap
+manager.onNotificationTap { response in
+    // Navigate to specific screen
+    print("Tapped: \(response.userInfo)")
+}
+
+// 5. Use category in notification
 let content = NotificationContent()
-    .title("New Message")
-    .body("You have a new message")
-    .category(NotificationCategory.message.rawValue)
+    .title("Now Playing")
+    .body("Track Name - Artist")
+    .category(musicPlayer)
+```
+
+### Predefined Categories
+
+```swift
+// Available predefined categories:
+- .reminder    // Complete, Snooze
+- .message     // Reply
+- .alert       // View, Dismiss
+- .invitation  // Accept, Decline
 ```
 
 ### Badge Management

@@ -3,6 +3,7 @@ import UserNotifications
 import Observation
 
 /// Manages user notifications, permissions, and scheduling
+@available(iOS 18.0, macOS 15.0, *)
 @Observable
 @MainActor
 public final class NotificationManager: NSObject, Sendable {
@@ -24,6 +25,9 @@ public final class NotificationManager: NSObject, Sendable {
         authorizationStatus == .authorized || authorizationStatus == .provisional
     }
 
+    /// Registered categories
+    private var registeredCategories: Set<NotificationCategory> = []
+
     // MARK: - Initialization
 
     private override init() {
@@ -32,6 +36,44 @@ public final class NotificationManager: NSObject, Sendable {
         super.init()
 
         notificationCenter.delegate = delegate
+    }
+
+    // MARK: - Category Management
+
+    /// Register notification categories
+    /// - Parameter categories: Categories to register
+    public func registerCategories(_ categories: [NotificationCategory]) {
+        registeredCategories.formUnion(categories)
+        let unCategories = Set(registeredCategories.map { $0.toUNCategory() })
+        notificationCenter.setNotificationCategories(unCategories)
+    }
+
+    /// Register single category
+    /// - Parameter category: Category to register
+    public func registerCategory(_ category: NotificationCategory) {
+        registerCategories([category])
+    }
+
+    // MARK: - Action Handlers
+
+    /// Set handler for notification tap (default action)
+    public func onNotificationTap(_ handler: @escaping @Sendable (NotificationResponse) async -> Void) {
+        delegate.onNotificationTap = handler
+    }
+
+    /// Set handler for notification dismiss
+    public func onNotificationDismiss(_ handler: @escaping @Sendable (NotificationResponse) async -> Void) {
+        delegate.onNotificationDismiss = handler
+    }
+
+    /// Set handler for custom actions
+    public func onCustomAction(_ handler: @escaping @Sendable (NotificationResponse) async -> Void) {
+        delegate.onCustomAction = handler
+    }
+
+    /// Set handler for foreground presentation
+    public func onForegroundPresentation(_ handler: @escaping @Sendable (UNNotification) async -> UNNotificationPresentationOptions) {
+        delegate.onForegroundPresentation = handler
     }
 
     // MARK: - Permission Management

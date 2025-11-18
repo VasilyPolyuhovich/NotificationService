@@ -3,6 +3,7 @@ import UserNotifications
 import CoreLocation
 
 /// Type-safe notification trigger types
+@available(iOS 18.0, macOS 15.0, *)
 public enum NotificationTrigger: Sendable {
 
     /// Time interval trigger
