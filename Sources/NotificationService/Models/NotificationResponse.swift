@@ -39,18 +39,59 @@ public struct NotificationResponse: Sendable {
         self.actionIdentifier = response.actionIdentifier
         self.notificationIdentifier = response.notification.request.identifier
 
-        // Convert userInfo to [String: any Sendable]
-        // Note: We unsafely assume values are Sendable-compatible types
+        // Convert userInfo to [String: any Sendable] safely
         var stringUserInfo: [String: any Sendable] = [:]
         for (key, value) in response.notification.request.content.userInfo {
             if let stringKey = key as? String {
-                // Unsafely bridge Any to Sendable - typical notification userInfo contains only primitive types
-                stringUserInfo[stringKey] = unsafeBitCast(value, to: (any Sendable).self)
+                stringUserInfo[stringKey] = Self.convertToSendable(value)
             }
         }
         self.userInfo = stringUserInfo
 
         self.title = response.notification.request.content.title
         self.body = response.notification.request.content.body
+    }
+    
+    /// Safely convert Any to Sendable types commonly used in notification userInfo
+    private static func convertToSendable(_ value: Any) -> any Sendable {
+        // Handle common primitive types
+        switch value {
+        case let string as String:
+            return string
+        case let int as Int:
+            return int
+        case let double as Double:
+            return double
+        case let float as Float:
+            return float
+        case let bool as Bool:
+            return bool
+        case let date as Date:
+            return date
+        case let data as Data:
+            return data
+        case let url as URL:
+            return url
+        case let uuid as UUID:
+            return uuid
+            
+        // Handle collections recursively
+        case let array as [Any]:
+            return array.map { convertToSendable($0) }
+        case let dict as [String: Any]:
+            return dict.mapValues { convertToSendable($0) }
+            
+        // NSNumber bridging (from Objective-C)
+        case let number as NSNumber:
+            // Check if it's a boolean (NSNumber stores bools too)
+            if CFGetTypeID(number) == CFBooleanGetTypeID() {
+                return number.boolValue
+            }
+            return number.doubleValue
+            
+        // Fallback: convert to string representation
+        default:
+            return String(describing: value)
+        }
     }
 }
