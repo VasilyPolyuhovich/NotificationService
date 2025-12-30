@@ -49,17 +49,19 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         let tapHandler = onNotificationTap
         let dismissHandler = onNotificationDismiss
         let customHandler = onCustomAction
-
-        _ = await MainActor.run {
-            Task { @MainActor in
-                switch actionIdentifier {
-                case UNNotificationDefaultActionIdentifier:
-                    await tapHandler?(notificationResponse)
-                case UNNotificationDismissActionIdentifier:
-                    await dismissHandler?(notificationResponse)
-                default:
-                    await customHandler?(notificationResponse)
-                }
+        
+        switch actionIdentifier {
+        case UNNotificationDefaultActionIdentifier:
+            if let handler = tapHandler {
+                await Task { @MainActor in await handler(notificationResponse) }.value
+            }
+        case UNNotificationDismissActionIdentifier:
+            if let handler = dismissHandler {
+                await Task { @MainActor in await handler(notificationResponse) }.value
+            }
+        default:
+            if let handler = customHandler {
+                await Task { @MainActor in await handler(notificationResponse) }.value
             }
         }
     }
