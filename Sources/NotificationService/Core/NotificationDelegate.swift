@@ -44,20 +44,23 @@ final class NotificationDelegate: NSObject, UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse
     ) async {
         let notificationResponse = NotificationResponse(response: response)
+        let actionIdentifier = response.actionIdentifier
+        
+        let tapHandler = onNotificationTap
+        let dismissHandler = onNotificationDismiss
+        let customHandler = onCustomAction
 
-        // Handle different actions
-        switch response.actionIdentifier {
-        case UNNotificationDefaultActionIdentifier:
-            // User tapped the notification
-            await onNotificationTap?(notificationResponse)
-
-        case UNNotificationDismissActionIdentifier:
-            // User dismissed the notification
-            await onNotificationDismiss?(notificationResponse)
-
-        default:
-            // Custom action
-            await onCustomAction?(notificationResponse)
+        _ = await MainActor.run {
+            Task { @MainActor in
+                switch actionIdentifier {
+                case UNNotificationDefaultActionIdentifier:
+                    await tapHandler?(notificationResponse)
+                case UNNotificationDismissActionIdentifier:
+                    await dismissHandler?(notificationResponse)
+                default:
+                    await customHandler?(notificationResponse)
+                }
+            }
         }
     }
 }
